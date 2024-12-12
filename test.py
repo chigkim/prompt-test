@@ -1,6 +1,5 @@
-llama_cli_path = "../llama.cpp/llama-cli"
-model_path = "../models/bartowski/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf"
-
+llama_cli_path = "../llama.cpp/build/bin/llama-cli"
+model_path = "../models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
 
 import subprocess
 import shlex
@@ -39,7 +38,6 @@ def run(command):
 	start = time.time()
 	process = subprocess.Popen(command_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 	stdout, stderr = process.communicate()
-	print(stderr)
 	return stderr, elapsed(start)
 
 
@@ -48,8 +46,18 @@ def run(command):
 r = r"(\d+\.\d+) tokens per second"
 files = glob("steps/*")
 files.sort(key=natural_keys)
-report_file = "report-"+os.path.basename(model_path)[:model_path.rindex(".")]+".txt"
+cmd = f"{llama_cli_path} -v"
+out, dur = run(cmd)
+build = re.search(r"build: (.*?) with", out)[1]
+model_name = os.path.basename(model_path)[:model_path.rindex(".")]
+report_file = f"report-{model_name} b{build}.txt"
 report = open(report_file, "w")
+report.write(f"Model: {model_name}\n")
+report.write(f"Build: {build}\n")
+report.write("| Prompt Tokens | Prompt Processing Speed | Generated Tokens | Token Generation Speed | Total Execution Time |\n")
+report.write("| --- | --- | --- | --- | --- |\n")
+
+init_out = ""
 for file in files:
 	count = int(re.search(r"(\d+)", file)[1])
 	cmd = f"{llama_cli_path} -m {model_path} -c {count+2000} -n 2000 --temp 0.0 --top_p 0.9 --seed 1000 -fa -f '{file}'"
@@ -59,6 +67,13 @@ for file in files:
 		cmd = f"{llama_cli_path} -m {model_path} -c {count} -n 2000 --temp 0.0 --top_p 0.9 --seed 1000 -fa -f '{file}'"
 		out, dur = run(cmd)
 		speeds = re.findall(r, out)		
+	for line in out.split("\n"):
+		if not init_out:
+			init_out = out
+			print(out)
+			break
+		if line not in init_out:
+			print(line)
 	runs = re.findall(r" (\d+) runs", out)
 	tokens = re.findall(r" (\d+) tokens", out)
 	res = [tokens[-2]]
