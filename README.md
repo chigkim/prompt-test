@@ -34,4 +34,4 @@ The setting will be persistent until next reboot.
 2. Delete all the files inside the steps folder.
 3. Run split.py.
 
-The script will generate new prompts with different number of tokens inside the steps folder. The number of tokens won't be exactly the same as what you specified in step, because the script will split at the closest new line.
+The script will generate new prompts with different number of tokens inside the steps folder. Review and delete the files as needed in order to reduce the steps. The number of tokens won't be exactly the same as what you specified in step, because the script will split at the closest new line.

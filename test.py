@@ -49,7 +49,7 @@ files.sort(key=natural_keys)
 cmd = f"{llama_cli_path} -v"
 out, dur = run(cmd)
 build = re.search(r"build: (.*?) with", out)[1]
-model_name = os.path.basename(model_path)[:model_path.rindex(".")]
+model_name = os.path.basename(model_path)
 report_file = f"report-{model_name} b{build}.txt"
 report = open(report_file, "w")
 report.write(f"Model: {model_name}\n")
