@@ -1,6 +1,7 @@
 llama_cli_path = "../llama.cpp/build/bin/llama-cli"
 model_path = "../models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
 
+
 import time
 start = time.time()
 import subprocess
@@ -62,13 +63,9 @@ report.write("| --- | --- | --- | --- | --- |\n")
 init_out = ""
 for file in files:
 	count = int(re.search(r"(\d+)", file)[1])
-	cmd = f"{llama_cli_path} -m {model_path} -c {count+2000} -n 2000 --temp 0.0 --top_p 0.9 --seed 1000 -fa -f '{file}'"
+	cmd = f"{llama_cli_path} -m {model_path} -c {count} -n 2000 --temp 0.0 --top_p 0.9 --seed 1000 -fa -f '{file}'"
 	out, dur = run(cmd)
 	speeds = re.findall(r, out)
-	if not speeds:
-		cmd = f"{llama_cli_path} -m {model_path} -c {count} -n 2000 --temp 0.0 --top_p 0.9 --seed 1000 -fa -f '{file}'"
-		out, dur = run(cmd)
-		speeds = re.findall(r, out)		
 	for line in out.split("\n"):
 		if not init_out:
 			init_out = out
