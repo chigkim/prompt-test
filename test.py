@@ -1,10 +1,11 @@
 llama_cli_path = "../llama.cpp/build/bin/llama-cli"
 model_path = "../models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
 
+import time
+start = time.time()
 import subprocess
 import shlex
 import re
-import time
 from datetime import datetime, timedelta
 import os
 from glob import glob
@@ -52,8 +53,9 @@ build = re.search(r"build: (.*?) with", out)[1]
 model_name = os.path.basename(model_path)
 report_file = f"report-{model_name} b{build}.txt"
 report = open(report_file, "w")
+report.write(datetime.now().strftime("%c")+"\n")
 report.write(f"Model: {model_name}\n")
-report.write(f"Build: {build}\n")
+report.write(f"Build: {build}\n\n")
 report.write("| Prompt Tokens | Prompt Processing Speed | Generated Tokens | Token Generation Speed | Total Execution Time |\n")
 report.write("| --- | --- | --- | --- | --- |\n")
 
@@ -84,3 +86,5 @@ for file in files:
 	msg = "| "+" | ".join(res)+" |"
 	print(msg)
 	report.write(msg+"\n")
+
+report.write(f"\nTotal duration: {elapsed(start)}\n")
