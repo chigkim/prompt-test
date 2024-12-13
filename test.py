@@ -53,7 +53,7 @@ build = re.search(r"build: (.*?) with", out)[1]
 model_name = os.path.basename(model_path)
 report_file = f"report-{model_name} b{build}.txt"
 report = open(report_file, "w")
-report.write(datetime.now().strftime("%c")+"\n")
+report.write(datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
 report.write(f"Model: {model_name}\n")
 report.write(f"Build: {build}\n\n")
 report.write("| Prompt Tokens | Prompt Processing Speed | Generated Tokens | Token Generation Speed | Total Execution Time |\n")
