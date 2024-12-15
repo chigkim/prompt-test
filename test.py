@@ -1,6 +1,8 @@
 llama_cli_path = "../llama.cpp/build/bin/llama-cli"
 model_path = "../models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
-parameters = "-n 2000 --temp 0.0 --top_p 0.9 --seed 1000 -b 4096 -ub 4096 -fa"
+parameters = "--n-predict 2000 --temp 0.0 --top_p 0.9 --seed 1000 --batch-size 4096 --ubatch-size 4096 --flash-attn"
+# For Cuda, You may need to assign buff_context to same as --n-predict.
+buffer_context_size = 0 
 
 import time
 start = time.time()
@@ -69,7 +71,7 @@ log("| --- | --- | --- | --- | --- |")
 init_out = ""
 for file in files:
 	count = int(re.search(r"(\d+)", file)[1])
-	cmd = f"{llama_cli_path} -m {model_path} -c {count} {parameters} -f '{file}'"
+	cmd = f"{llama_cli_path} -m {model_path} --ctx-size {count+buffer_context_size} {parameters} --file '{file}'"
 	out, dur = run(cmd)
 	speeds = re.findall(r, out)
 	for line in out.split("\n"):
