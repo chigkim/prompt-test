@@ -1,7 +1,7 @@
 prompt_path = "portugal.txt"
 llama_cli_path = "../llama.cpp/build/bin/llama-cli"
 model_path = "../models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
-steps = [500, 1000, 1500, 2000, 3000, 4000, 6000, 8000, 12000, 16000, 24000, 32000] # aprox tokens
+steps = [250, 500, 1000, 1500, 2000, 3000, 4000, 6000, 8000, 12000, 16000, 24000, 32000] # aprox tokens
 
 prefix = """<|start_header_id|>system<|end_header_id|>
 
