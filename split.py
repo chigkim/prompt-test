@@ -1,7 +1,7 @@
 prompt_path = "portugal.txt"
 llama_cli_path = "../llama.cpp/build/bin/llama-cli"
 model_path = "../models/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
-step = 100 # aprox tokens
+steps = [500, 1000, 1500, 2000, 3000, 4000, 6000, 8000, 12000, 16000, 24000, 32000] # aprox tokens
 
 prefix = """<|start_header_id|>system<|end_header_id|>
 
@@ -22,6 +22,8 @@ import re
 import time
 from datetime import datetime, timedelta
 import os
+import codecs
+
 def run(command):
 	print(command)
 	command_args = shlex.split(command)
@@ -35,17 +37,22 @@ def run(command):
 try: os.mkdir("steps")
 except: pass
 
-prev = 0
+
+text = codecs.open(prompt_path, "r", "utf-8").read()
 prompt = prefix
-text = open(prompt_path).read()
-for line in open(prompt_path).readlines():
+
+index = 0
+step = steps[index]
+for line in codecs.open(prompt_path, "r", "utf-8").readlines():
 	prompt += line
-	if len(line)<10: continue
-	open("temp.txt", "w").write(prompt+suffix)
+	codecs.open("temp.txt", "w", "utf-8").write(prompt+suffix)
 	cmd = f"{llama_cli_path} -m {model_path} -c 1 -n 1 -f ./temp.txt"
 	out = run(cmd)
 	m = re.search(r"(\d+) tokens", out)
 	count = int(m[1])
-	if count > prev+step or len(prompt) > len(text):
+	if count >= step or len(prompt) > len(text):
 		os.rename("temp.txt", "steps/"+str(count)+".txt")
-		prev += step
+		index += 1
+		if index == len(steps):
+			break
+		step = steps[index]
