@@ -74,17 +74,31 @@ def generate_prompts(file, initial_ratio, ratio=0.0, reverse=False):
         take = int(len(prompt) * ratio)
     prompts = ["".join(prompt) for prompt in prompts]
     try:
-        shutil.rmtree("prompts")
-    except:
-        pass
-    try:
         os.mkdir("prompts")
     except:
         pass
-    for prompt in prompts:
-        file = f"prompts/{len(re.findall(r"\S+\s*", prompt))}.txt"
+    for i, prompt in enumerate(prompts):
+        file = f"prompts/{i+1}.txt"
         codecs.open(file, "w", "utf-8").write(prompt)
-    print(f"Generated {len(prompts)} prompts.")
+    print(f"Generated {len(prompts)} prompts inside prompts folder. Edit individual prompts or remove the entire folder to regenerate.")
+    return prompts
+
+def atoi(text):
+	return int(text) if text.isdigit() else text
+
+def natural_keys(text):
+	return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+
+def get_prompts():
+    if os.path.exists("prompts"):
+        files = glob("prompts/*.txt")
+        files.sort(key=natural_keys)
+        prompts = [codecs.open(file).read() for file in files]
+    else:
+        prompts = generate_prompts(
+            prompt_file, initial_ratio=initial_ratio, ratio=ratio, reverse=True
+        )
+    print(f"Retrieved {len(prompts)} prompts.")
     return prompts
 
 
@@ -186,10 +200,7 @@ log(headers_text)
 header_line = [re.sub(r".", "-", header) for header in headers]
 header_line = "| " + " | ".join(header_line) + " |"
 log(header_line)
-
-prompts = generate_prompts(
-    prompt_file, initial_ratio=initial_ratio, ratio=ratio, reverse=True
-)
+prompts = get_prompts()
 messages = [
     {"role": "system", "content": "Act as a system admin."},
     {"role": "user", "content": "This is test."},
