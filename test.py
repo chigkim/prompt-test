@@ -221,7 +221,7 @@ for i, prompt in enumerate(prompts):
         report(*stats)
     except Exception as e:
         print(e)
-    if cooling:
+    if cooling and i + 1 < len(prompts):
         print(f"Coolling down for {cooling} seconds.")
         time.sleep(cooling)
 
