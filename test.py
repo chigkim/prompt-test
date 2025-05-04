@@ -80,14 +80,19 @@ def generate_prompts(file, initial_ratio, ratio=0.0, reverse=False):
     for i, prompt in enumerate(prompts):
         file = f"prompts/{i+1}.txt"
         codecs.open(file, "w", "utf-8").write(prompt)
-    print(f"Generated {len(prompts)} prompts inside prompts folder. Edit individual prompts or remove the entire folder to regenerate.")
+    print(
+        f"Generated {len(prompts)} prompts inside prompts folder. Edit individual prompts or remove the entire folder to regenerate."
+    )
     return prompts
 
+
 def atoi(text):
-	return int(text) if text.isdigit() else text
+    return int(text) if text.isdigit() else text
+
 
 def natural_keys(text):
-	return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+    return [atoi(c) for c in re.split(r"(\d+)", text)]
+
 
 def get_prompts():
     if os.path.exists("prompts"):
