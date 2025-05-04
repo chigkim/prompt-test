@@ -1,13 +1,15 @@
-base_url = "http://localhost:8080/v1"
+base_url = "http://localhost:8080/v1/"
 api_key = "api_key"
-model = "qwen3:30b-a3b-q8_0"
-# model = "mlx-community/Qwen3-30B-A3B-8bit"
-# model = "Qwen/Qwen3-30B-A3B-FP8"
+model = "Qwen3-30B-A3B-q8_0"
 temperature = 0.7
 top_p = 0.8
 max_tokens = 2000
 seed = 1000
 prompt_file = "prompt.txt"
+# Initial prompt uses 2% of prompt document.
+initial_ratio = 0.02
+# Specifying 0.0 uses the golden ratio 0.381... to build subsequent prompts.
+ratio = 0.0
 cooling = 10
 setup = ["RTX3090", "LCPP"]
 # Provides two system prompts to alternate in order to avoid prompt caching.
@@ -37,11 +39,12 @@ import math
 import shutil
 
 
-def generate_prompts(file, initial_ratio=0.02, reverse=False):
+def generate_prompts(file, initial_ratio, ratio=0.0, reverse=False):
     text = codecs.open(file, "r", "utf-8").read()
     words = re.findall(r"\S+\s*", text)
-    phi = (1 + math.sqrt(5)) / 2
-    ratio = 1 / (1 + phi)
+    if ratio == 0.0:
+        phi = (1 + math.sqrt(5)) / 2
+        ratio = 1 / (1 + phi)
     prompts = []
     total = len(words)
     take = int(total * initial_ratio)
@@ -184,7 +187,9 @@ header_line = [re.sub(r".", "-", header) for header in headers]
 header_line = "| " + " | ".join(header_line) + " |"
 log(header_line)
 
-prompts = generate_prompts(prompt_file, reverse=True)
+prompts = generate_prompts(
+    prompt_file, initial_ratio=initial_ratio, ratio=ratio, reverse=True
+)
 messages = [
     {"role": "system", "content": "Act as a system admin."},
     {"role": "user", "content": "This is test."},
