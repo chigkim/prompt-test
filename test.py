@@ -98,7 +98,7 @@ def get_prompts():
     if os.path.exists("prompts"):
         files = glob("prompts/*.txt")
         files.sort(key=natural_keys)
-        prompts = [codecs.open(file).read() for file in files]
+        prompts = [codecs.open(file, "r", "utf-8").read() for file in files]
     else:
         prompts = generate_prompts(
             prompt_file, initial_ratio=initial_ratio, ratio=ratio, reverse=True
