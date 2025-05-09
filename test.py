@@ -6,10 +6,7 @@ top_p = 0.8
 max_tokens = 2000
 seed = 1000
 prompt_file = "prompt.txt"
-# Initial prompt uses 2% of prompt document.
-initial_ratio = 0.02
-# Specifying 0.0 uses the golden ratio 0.381... to build subsequent prompts.
-ratio = 0.0
+n_prompts = 10
 cooling = 10
 setup = ["RTX3090", "LCPP"]
 # Provides two system prompts to alternate in order to avoid prompt caching.
@@ -39,15 +36,16 @@ import math
 import shutil
 
 
-def generate_prompts(file, initial_ratio, ratio=0.0, reverse=False):
+def generate_prompts(file, n_prompts=10, reverse=False):
     text = codecs.open(file, "r", "utf-8").read()
     words = re.findall(r"\S+\s*", text)
-    if ratio == 0.0:
-        phi = (1 + math.sqrt(5)) / 2
-        ratio = 1 / (1 + phi)
-    prompts = []
+    phi = (1 + math.sqrt(5)) / 2
+    ratio = 1 / (1 + phi)
+    multiplier = 1 + ratio
     total = len(words)
-    take = int(total * initial_ratio)
+    x = total / (multiplier ** (n_prompts - 1))
+    prompts = []
+    take = int(x)
 
     while words:
         if take > len(words):
@@ -100,9 +98,7 @@ def get_prompts():
         files.sort(key=natural_keys)
         prompts = [codecs.open(file, "r", "utf-8").read() for file in files]
     else:
-        prompts = generate_prompts(
-            prompt_file, initial_ratio=initial_ratio, ratio=ratio, reverse=True
-        )
+        prompts = generate_prompts(prompt_file, n_prompts=n_prompts, reverse=True)
     print(f"Retrieved {len(prompts)} prompts.")
     return prompts
 
