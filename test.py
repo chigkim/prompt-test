@@ -27,60 +27,39 @@ headers = [
 
 import time
 from datetime import datetime, timedelta
-import os
 from glob import glob
 import openai
-import codecs
 import re
 import math
-import shutil
-
+from pathlib import Path
 
 def generate_prompts(file, n_prompts=10, reverse=False):
-    text = codecs.open(file, "r", "utf-8").read()
+    text = Path("prompt.txt").read_text(encoding="utf-8")
     words = re.findall(r"\S+\s*", text)
-    phi = (1 + math.sqrt(5)) / 2
-    ratio = 1 / (1 + phi)
-    multiplier = 1 + ratio
+    Path("prompts").mkdir(exist_ok=True)
+    phi = (1 + 5 ** 0.5) / 2
     total = len(words)
-    x = total / (multiplier ** (n_prompts - 1))
+    
+    lengths = [max(1, int(round(total / (phi ** (n_prompts - i - 1))))) for i in range(n_prompts)]
+    lengths[-1] = total  # Ensure last prompt includes all words
+    
+    for i in range(1, n_prompts):
+        lengths[i] = max(lengths[i], lengths[i-1] + 1)
+    
     prompts = []
-    take = int(x)
+    direction = "suffix" if reverse else "prefix"
+    
+    for idx, length in enumerate(lengths, start=1):
+        snippet = words[-length:] if reverse else words[:length]
+        prompt_text = "".join(snippet)
+        prompts.append(prompt_text)
+        
+        path = Path("prompts") / f"{idx}.txt"
+        path.write_text(prompt_text, encoding="utf-8")
+        
+        print(f"Prompt {idx} ({direction} {length} words), → {path}")
 
-    while words:
-        if take > len(words):
-            if reverse:
-                prompts[-1] = words + prompts[-1]
-            else:
-                prompts[-1] = prompts[-1] + words
-            break
-        if prompts:
-            if reverse:
-                prompt = words[-take:] + prompts[-1]
-            else:
-                prompt = prompts[-1] + words[:take]
-        else:
-            if reverse:
-                prompt = words[-take:]
-            else:
-                prompt = words[:take]
-        prompts.append(prompt)
-        if reverse:
-            words = words[:-take]
-        else:
-            words = words[take:]
-        take = int(len(prompt) * ratio)
-    prompts = ["".join(prompt) for prompt in prompts]
-    try:
-        os.mkdir("prompts")
-    except:
-        pass
-    for i, prompt in enumerate(prompts):
-        file = f"prompts/{i+1}.txt"
-        codecs.open(file, "w", "utf-8").write(prompt)
-    print(
-        f"Generated {len(prompts)} prompts inside prompts folder. Edit individual prompts or remove the entire folder to regenerate."
-    )
+    print(f"Generated {len(prompts)} prompts. Delete prompts folder to regenerate.")
     return prompts
 
 
@@ -93,10 +72,10 @@ def natural_keys(text):
 
 
 def get_prompts():
-    if os.path.exists("prompts"):
+    if Path("prompts").exists():
         files = glob("prompts/*.txt")
         files.sort(key=natural_keys)
-        prompts = [codecs.open(file, "r", "utf-8").read() for file in files]
+        prompts = [Path(file).read_text(encoding="utf-8") for file in files]
     else:
         prompts = generate_prompts(prompt_file, n_prompts=n_prompts, reverse=True)
     print(f"Retrieved {len(prompts)} prompts.")
